@@ -21,72 +21,7 @@
 ; *******************************************************************
 
 
-  FORWARD_FUNCTION experimentWindow
-
-;  ****************************************** Test key **************
-
-function checkcode, email, key, code
-email = strtrim(strlowcase(email),2)
-key = strtrim(key,2)
-code = strtrim(code,2)
-if (strlen(email) eq 0) then return, 3
-if (strlen(key) eq 0) then return, 3
-str = key + email
-strb = byte(str)
-nc = N_ELEMENTS(strb)
-testcode = ''
-for i=0,nc-1 do begin
-	testcode += strtrim(string(fix(long(strb[i])*3 mod 10)),2)
-endfor
-if (strcmp(code,testcode) ne 1) then return, 4
-keyb = byte(key)
-nc = N_ELEMENTS(keyb)
-expir = ''
-for i=0,nc-1 do begin
-	digit = fix(long(keyb[i])-48)
-	tmp = digit-3
-	if (tmp lt 0) then tmp=10+tmp
-	expir += strtrim(tmp,2)
-endfor
-date = systime(/julian)
-if (expir lt date) then return, 2
-return, 1
-end
-
-function registrationcheck
-email = GETENV('SMLILLE_MULTIFIT_USER')
-key = GETENV('SMLILLE_MULTIFIT_KEY')
-code = GETENV('SMLILLE_MULTIFIT_CODE')
-check = checkcode(email, key, code)
-if (check ne 1) then begin
-	if (check eq 2) then txt = "Your key is expired"
-	if (check eq 3) then txt = "Not registered yet"
-	if (check eq 4) then txt = "Key is invalid"
-	messages = strarr(3)
-	messages[0] = "Registration check returned the following message"
-	messages[1] = "   '" + txt + "'"
-	messages[2] = "please check the Multifit/polydefix homepage for registration information"
-	messages[2] = "http://merkel.zoneo.net/Polydefix/"
-	Result = DIALOG_MESSAGE(messages, /ERROR, /center)
-	return, 0
-endif
-return, 1
-end
-
-function getExpiration, key
-keyb = byte(key)
-nc = N_ELEMENTS(keyb)
-decode = ''
-for i=0,nc-1 do begin
-	digit = fix(long(keyb[i])-48); digit
-	tmp = digit-3
-	if (tmp lt 0) then tmp=10+tmp
-	decode += strtrim(tmp,2)
-endfor
-CALDAT, decode, Month1, Day1, Year1
-mm = ['jan', 'fev', 'mar', 'avr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-return, mm[Month1-1] + " " + strtrim(string(Day1),2) + ", " + strtrim(string(Year1),2)
-end
+FORWARD_FUNCTION experimentWindow
 
 ; ****************************************** about window **************
 
@@ -96,31 +31,16 @@ END
 
 pro aboutWindow, base
 common fonts, titlefont, boldfont
-email = GETENV('SMLILLE_MULTIFIT_USER')
-key = GETENV('SMLILLE_MULTIFIT_KEY')
-code = GETENV('SMLILLE_MULTIFIT_CODE')
-registered = checkcode(email, key, code)
 basedialog = WIDGET_BASE(/COLUMN, /MODAL, GROUP_LEADER=base, Title='About Polydefix')
 infobase =  WIDGET_BASE(basedialog,/COLUMN)
 la = WIDGET_LABEL(infobase, VALUE='PolydefixED v0.4', /ALIGN_LEFT, font=titlefont)
 la = WIDGET_LABEL(infobase, VALUE='', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Polydefix, Polycrystal Deformation using X-rays', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Energy dispersive version', /ALIGN_LEFT)
-la = WIDGET_LABEL(infobase, VALUE='Build 5, 6 Sep 2010', /ALIGN_LEFT)
+la = WIDGET_LABEL(infobase, VALUE='Build 6, 15 June 2011', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Copyright S. Merkel, Universite Lille 1, France', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='http://merkel.ZoneO.net/Polydefix/', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='', /ALIGN_LEFT)
-registrationinfo =  WIDGET_BASE(basedialog,/COLUMN, frame=1, /BASE_ALIGN_CENTER )
-la = WIDGET_LABEL(registrationinfo, VALUE='Registration', /ALIGN_CENTER, font=boldfont)
-la = WIDGET_LABEL(registrationinfo, VALUE='', /ALIGN_CENTER)
-if (registered gt 2) then begin
-	la = WIDGET_LABEL(registrationinfo, VALUE='This version is not registered yet', /ALIGN_CENTER, font=boldfont)
-endif else begin
-	expiration = getExpiration(key)
-	la = WIDGET_LABEL(registrationinfo, VALUE='Registered for: '+strtrim(email,2), /ALIGN_LEFT, font=boldfont)
-	la = WIDGET_LABEL(registrationinfo, VALUE='Expiration: '+strtrim(expiration,2), /ALIGN_LEFT, font=boldfont)
-endelse
-la = WIDGET_LABEL(registrationinfo, VALUE='', /ALIGN_CENTER)
 buttons = WIDGET_BASE(basedialog,/ROW, /GRID_LAYOUT, /ALIGN_CENTER)
 ok = WIDGET_BUTTON(buttons, VALUE='Ok', UVALUE='OK')
 WIDGET_CONTROL, basedialog, /REALIZE
@@ -595,13 +515,6 @@ fitOffsetLa = WIDGET_LABEL(summary, VALUE='Fit compression direction', /ALIGN_LE
 fitOffsetSt = WIDGET_TEXT(summary,  VALUE='Not set', XSIZE=10)
 log = WIDGET_TEXT(top, XSIZE=75, YSIZE=40, /ALIGN_CENTER, /EDITABLE, /WRAP, /SCROLL)
 stash = {base: base, log:log, matSt: matSt, peaksSt: peaksSt, offsetSt: offsetSt, fitOffsetSt: fitOffsetSt}
-; Is the application registered?
-registered = registrationcheck()
-if (registered ne 1) then begin
-	toclear = [fit_bttn1, fit_bttn2, fit_bttn3, fit_bttn4]
-	n = N_ELEMENTS(toclear)
-	for i=0, n-1 do WIDGET_CONTROL, toclear[i], set_uvalue='FORBIDDEN'
-endif
 WIDGET_CONTROL, base, SET_UVALUE=stash
 WIDGET_CONTROL, base, /REALIZE
 XMANAGER, 'experimentWindow', base
