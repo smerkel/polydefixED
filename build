@@ -1,0 +1,42 @@
+
+; RESET IDL Session
+.RESET_SESSION
+
+; Compile project files
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/sym.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/mpfit.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/mpfitfun.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/func.gui.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/func.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/fitOffsetWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/beartexWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/diffIntensityWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/materialObject.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/materialWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/experimentObject.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/experimentWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/fdecomp.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/fitLatticeStrainsWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/fitPressureWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/fitStressWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/fitUnitCellWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/gettok.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/latticeStrainMultiplePeaksOffset.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/latticestrainMultiplePeaksNoCorr.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/latticestrainObject.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/line.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/plotIntensities.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/plotTestLatticeStrains.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/plotinteractive1D.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/showprogress.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/testLatticeStrainsWindow.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/unitCellObject.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/diffIntensityWindow2.pro'
+.COMPILE '/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/polydefixED.pro'
+
+; Resolve all routines
+RESOLVE_ALL, /CONTINUE_ON_ERROR
+
+; Create the project save file
+SAVE, /ROUTINES, FILENAME='/home/smerkel/Programmes/IDL/StressStrain/PolydefixED-v0.4/polydefixED_0p4.sav', /VERBOSE
+
