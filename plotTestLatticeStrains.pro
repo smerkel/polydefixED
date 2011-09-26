@@ -228,11 +228,37 @@ if (postscript eq 0) then begin ; plotting to screen
 	wset, (*pstate).w_id
 	for i=0, (*pstate).nSets-1 do begin
 		for j=0, (*pstate).nUsePeak-1 do begin
-			if (i eq 0) and (j eq 0) then $
-				plot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
-			else $
-				oplot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)), color=0, PSYM=2
-			oplot, (*pstate).xdatafit, (*(*pstate).ydatafit(i,j)), color=10
+		  ; print, "I am here", i, j
+		  ; help, (*pstate)
+		  ; help, (*pstate).ydata
+      ; help, *((*pstate).ydata[i])
+		  ; help, *((*pstate).ydata[i,j])
+		  ;print, *((*pstate).ydata[0])(i,j)
+      ;print, *((*pstate).xdata[0])(i,j)
+		  ;print, "I am there"
+		  ; S. Merkel Changed 09/2011, for some reason, it crashes if there is only one dataset with IDL 8.1
+		  ; It was working for years!
+;     ;   if (i eq 0) and (j eq 0) then $
+;     ;     plot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+;     ;   else $
+;     ;     oplot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)), color=0, PSYM=2
+;     ;   oplot, (*pstate).xdatafit, (*(*pstate).ydatafit(i,j)), color=10
+;      Playing with IDL help command, I figured a funny structure. They way to address the pointer depends on the number of elements
+;      If we have only one peak to plot, the pointer has one column, if we have several peaks, it has two...
+       if ((*pstate).nUsePeak eq 1) then begin
+			   if (i eq 0) and (j eq 0) then $
+			     plot,*((*pstate).xdata[0])(0,0), *((*pstate).ydata[0])(0,0),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+         else $
+           oplot, *((*pstate).xdata[i])(0,j), *((*pstate).ydata[i])(0,j), color=0, PSYM=2
+         oplot, (*pstate).xdatafit, *((*pstate).ydatafit[i])(0,j), color=10
+       endif else begin
+         if (i eq 0) and (j eq 0) then $
+           plot,*((*pstate).xdata[0,0])(0,0), *((*pstate).ydata[0,0])(0,0),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+         else $
+           oplot, *((*pstate).xdata[i,j])(0,0), *((*pstate).ydata[i,j])(0,0), color=0, PSYM=2
+         oplot, (*pstate).xdatafit, *((*pstate).ydatafit[i,j])(0,0), color=10
+         
+       endelse
 		endfor
 	endfor
 
@@ -395,6 +421,9 @@ for i=0, nSets-1 do begin
 		ydatafit[i,j] = PTR_NEW(experiment->latticeStrainDvsPsi(xdatafit,set,peak,/used))
 		ydatamin = min([ydatamin,min(*(ydata[i,j])),min(*(ydatafit[i,j]))])
 		ydatamax = max([ydatamax,max(*(ydata[i,j])),max(*(ydatafit[i,j]))])
+    ;print, experiment->getPsiPeak(set,peak,/used)
+    ;print, experiment->getDPeak(set,peak,/used)
+    ;print, ydatamin, ydatamax
 	endfor
 endfor
 ; main window

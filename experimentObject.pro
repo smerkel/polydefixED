@@ -159,11 +159,13 @@ end
 ; to change angle of detectors
 pro experimentObject::setDetectorAngles, angles
 (*self.detangles) = angles
+self->resetFit
 end
 
 ; to change use of detectors
 pro experimentObject::setDetectorUses, use
 (*self.usedet) = use
+self->resetFit
 end
 
 ; *************************************************** Datasets operations  ***********************
@@ -456,8 +458,10 @@ common fitinfo, npeaks, npsi, offsetangle, costheta, countnan, nan
 		offset = i*self.ndetector
 		peak = peaks[i]
 		for j=0,self.ndetector-1 do begin
-			psi[offset+j] = !PI*(*self.detangles)[j]/180.
-			dm[offset+j] = (*self.dm)[index,peak,j]
+      psi[offset+j] = !PI*(*self.detangles)[j]/180.
+		  if ((*self.usedet)[j] eq 1) then $
+			   dm[offset+j] = (*self.dm)[index,peak,j] $
+			else dm[offset+j] = !VALUES.F_NAN 
 		endfor
 	endfor
 	nan = where(finite(dm,/Nan), countnan)
@@ -499,7 +503,9 @@ common fitinfo, npeaks, npsi, offsetangle, costheta, countnan, nan
 		peak = peaks[i]
 		for j=0,self.ndetector-1 do begin
 			psi[offset+j] = !PI*(*self.detangles)[j]/180.
-			dm[offset+j] = (*self.dm)[index,peak,j]
+      if ((*self.usedet)[j] eq 1) then $
+         dm[offset+j] = (*self.dm)[index,peak,j] $
+      else dm[offset+j] = !VALUES.F_NAN 
 		endfor
 	endfor
 	nan = where(finite(dm,/Nan), countnan)
