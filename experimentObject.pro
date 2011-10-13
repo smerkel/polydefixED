@@ -480,6 +480,8 @@ common fitinfo, npeaks, npsi, offsetangle, costheta, countnan, nan
 	end
 	sigma = fltarr(npeaks*self.ndetector)
 	sigma[*] = max([0.0005*(dm[*]), 0.00000001])
+	; print, psi
+	; print, dm
 	fit = MPFITFUN('LATTICESTRAINMULTIPLEPEAKSNOCORR', psi, dm, sigma, guess, perror = perror, /quiet)
 	fitobject->setFitResultsNoCorr, peaks, (*self.hkl), self.offset, {fit:fit , perror: perror}
 	return, fitobject
@@ -1147,6 +1149,8 @@ while ~ EOF(lun) do begin
 			logit, log, "\tError with line\n\t\t" + line + "\n\tdetector number is larger than expected"
 			return, "Error with input data"
 		endif
+		;print, d, ' ', row[4], ' ', double(row[4])
+		;print, row
 		(*self.dm)[step,peak,det] = d
 		(*self.Im)[step,peak,det] = i
 	endif

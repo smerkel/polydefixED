@@ -23,9 +23,10 @@
 ; ***************************************************************************
 ; plot T function
 ; plots t(hkl) as a function of image number
+; Add the /STRAIN parameter to plot vs. strain, will plot vs. step otherwise
 ; **************************************************************************
 
-pro plotT, log, base, selected
+pro plotT, log, base, selected, STRAIN = st
 common experimentwindow, set, experiment
 common default, defaultdir
 
@@ -51,9 +52,14 @@ for i=0,n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
+xlabel = 'Step number'
+if KEYWORD_SET(st) then begin
+  x = experiment->getStrains()
+  xlabel = 'Strain'
+endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, t, title = 't(hkl) vs. step number', xlabel='Step number', ylabel='t(hkl)', legend=legend
+plotinteractive1D, base, x, t, title = 't(hkl) vs. step number', xlabel=xlabel, ylabel='t(hkl)', legend=legend
 end
 
 ; ***************************************************************************
@@ -107,10 +113,14 @@ CASE ev.id OF
 		CASE uval OF
 		'REFINE': refineTTxt, stash.log
 		'ASCII': exportRefineTCSV, stash.log
-		'PLOTT': BEGIN
+		'PLOTT-STEP': BEGIN
 			WIDGET_CONTROL, stash.plotwhatT, GET_VALUE=selected
 			plotT, stash.log, stash.base, selected
 		END
+    'PLOTT-STRAIN': BEGIN
+      WIDGET_CONTROL, stash.plotwhatT, GET_VALUE=selected
+      plotT, stash.log, stash.base, selected, /STRAIN
+    END
 		'DONE': WIDGET_CONTROL, stash.input, /DESTROY
 		else:
 		ENDCASE
@@ -142,7 +152,8 @@ export = WIDGET_BUTTON(buttons1, VALUE='Export to ASCII', UVALUE='ASCII')
 plotT = WIDGET_BASE(buttons1,/COLUMN, /ALIGN_CENTER, /FRAME, XSIZE = 100)
 values = experiment->getPeakList(/used)
 plotwhatT = CW_BGROUP(plotT, values, /COLUMN, /NONEXCLUSIVE, LABEL_TOP='t(hkl)', UVALUE='NOTHING')
-plotit = WIDGET_BUTTON(plotT, VALUE='Plot', UVALUE='PLOTT')
+plotit = WIDGET_BUTTON(plotT, VALUE='Plot vs. step', UVALUE='PLOTT-STEP')
+plotit = WIDGET_BUTTON(plotT, VALUE='Plot vs. strain', UVALUE='PLOTT-STRAIN')
 ; log
 log = WIDGET_TEXT(fit, XSIZE=75, YSIZE=30, /ALIGN_CENTER, /EDITABLE, /WRAP, /SCROLL)
 ; buttons2

@@ -23,9 +23,10 @@
 ; ***************************************************************************
 ; plot BC function
 ; plots beam center position as a function of image number
+; Add the /STRAIN parameter to plot vs. strain, will plot vs. step otherwise
 ; **************************************************************************
 
-pro plotOffset, log, base
+pro plotOffset, log, base, STRAIN = st
 common experimentwindow, set, experiment
 common default, defaultdir
 ; Setting up the legend
@@ -45,10 +46,14 @@ for i=0, n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
-;print, BC
+xlabel = 'Step number'
+if KEYWORD_SET(st) then begin
+  x = experiment->getStrains()
+  xlabel = 'Strain'
+endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, BC, title = 'Maximum stress direction vs. image number', xlabel='Dataset number', ylabel='Maximum stress direction', legend=legend
+plotinteractive1D, base, x, BC, title = 'Maximum stress direction vs. image number', xlabel=xlabel, ylabel='Maximum stress direction', legend=legend
 end
 
 ; ***************************************************************************
@@ -101,7 +106,8 @@ CASE ev.id OF
 		CASE uval OF
 		'REFINE': refineOffsetTxt, stash.log
 		'ASCII': exportOffsetCSV, stash.log
-		'PLOT': plotOffset, stash.log, stash.base
+		'PLOT-STEP': plotOffset, stash.log, stash.base
+    'PLOT-STRAIN': plotOffset, stash.log, stash.base, /STRAIN
 		'DONE': WIDGET_CONTROL, stash.input, /DESTROY
 		else:
 		ENDCASE
@@ -130,7 +136,8 @@ fit = WIDGET_BASE(input, /ROW, FRAME=1)
 buttons1 = WIDGET_BASE(fit,/COLUMN, /ALIGN_CENTER)
 refine = WIDGET_BUTTON(buttons1, VALUE='Show details', UVALUE='REFINE')
 export = WIDGET_BUTTON(buttons1, VALUE='Export to ASCII', UVALUE='ASCII')
-plotit = WIDGET_BUTTON(buttons1, VALUE='Plot', UVALUE='PLOT')
+plotit = WIDGET_BUTTON(buttons1, VALUE='Plot vs step', UVALUE='PLOT-STEP')
+plotit = WIDGET_BUTTON(buttons1, VALUE='Plot vs strain', UVALUE='PLOT-STRAIN')
 ; log
 log = WIDGET_TEXT(fit, XSIZE=75, YSIZE=30, /ALIGN_CENTER, /EDITABLE, /WRAP, /SCROLL)
 ; buttons2

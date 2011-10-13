@@ -23,9 +23,10 @@
 ; ***************************************************************************
 ; plot Q function
 ; plots Q(hkl) as a function of image number
+; Add the /STRAIN parameter to plot vs. strain, will plot vs. step otherwise
 ; **************************************************************************
 
-pro plotQ, log, base, selected
+pro plotQ, log, base, selected, STRAIN = st
 common experimentwindow, set, experiment
 common default, defaultdir
 
@@ -54,9 +55,14 @@ for i=0,n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
+xlabel = 'Step number'
+if KEYWORD_SET(st) then begin
+  x = experiment->getStrains()
+  xlabel = 'Strain'
+endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, Q, title = 'Q(hkl) vs. step number', xlabel='Step number', ylabel='Q(hkl)', legend=legend
+plotinteractive1D, base, x, Q, title = 'Q(hkl) vs. step number', xlabel=xlabel, ylabel='Q(hkl)', legend=legend
 end
 
 ; ***************************************************************************
@@ -109,10 +115,14 @@ CASE ev.id OF
 		CASE uval OF
 		'REFINE': refineQTxt, stash.log
 		'ASCII': exportRefineQCSV, stash.log
-		'PLOTQ': BEGIN
+		'PLOTQ-STEP': BEGIN
 			WIDGET_CONTROL, stash.plotwhatQ, GET_VALUE=selected
 			plotQ, stash.log, stash.base, selected
 		END
+    'PLOTQ-STRAIN': BEGIN
+      WIDGET_CONTROL, stash.plotwhatQ, GET_VALUE=selected
+      plotQ, stash.log, stash.base, selected, /STRAIN
+    END
 		'DONE': WIDGET_CONTROL, stash.input, /DESTROY
 		else:
 		ENDCASE
@@ -144,7 +154,8 @@ export = WIDGET_BUTTON(buttons1, VALUE='Export to ASCII', UVALUE='ASCII')
 plotQ = WIDGET_BASE(buttons1,/COLUMN, /ALIGN_CENTER, /FRAME, XSIZE = 100)
 values = experiment->getPeakList(/used)
 plotwhatQ = CW_BGROUP(plotQ, values, /COLUMN, /NONEXCLUSIVE, LABEL_TOP='Q(hkl)', UVALUE='NOTHING')
-plotit = WIDGET_BUTTON(plotQ, VALUE='Plot', UVALUE='PLOTQ')
+plotit = WIDGET_BUTTON(plotQ, VALUE='Plot vs. step', UVALUE='PLOTQ-STEP')
+plotit = WIDGET_BUTTON(plotQ, VALUE='Plot vs. strain', UVALUE='PLOTQ-STRAIN')
 ; log
 log = WIDGET_TEXT(fit, XSIZE=75, YSIZE=30, /ALIGN_CENTER, /EDITABLE, /WRAP, /SCROLL)
 ; buttons2

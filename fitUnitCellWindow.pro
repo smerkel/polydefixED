@@ -23,9 +23,10 @@
 ; ***************************************************************************
 ; plot d0 function
 ; plots d0(hkl) as a function of image number
+; Add the /STRAIN parameter to plot vs. strain, will plot vs. step otherwise
 ; **************************************************************************
 
-pro plotDSpacings, log, base, selected
+pro plotDSpacings, log, base, selected, STRAIN = st
 common experimentwindow, set, experiment
 common default, defaultdir
 n = experiment->getnumberDatasets()
@@ -51,24 +52,31 @@ for i=0,n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
+xlabel = 'Step number'
+if KEYWORD_SET(st) then begin
+  x = experiment->getStrains()
+  xlabel = 'Strain'
+endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, d, title = 'd0('+peakname+') vs. step number', xlabel='Step number', ylabel='d0('+peakname+')', legend=['Exp.', 'Recalc.']
+plotinteractive1D, base, x, d, title = 'd0('+peakname+') vs. step number', xlabel=xlabel, ylabel='d0('+peakname+')', legend=['Exp.', 'Recalc.']
 end
 
 
 ; ***************************************************************************
 ; plot unit cell function
 ; plots one of the unit cell parameters as a function of image number
+; Add the /STRAIN parameter to plot vs. strain, will plot vs. step otherwise
 ; **************************************************************************
 
-pro plotUnitCell, log, base, selected
+pro plotUnitCell, log, base, selected, STRAIN = st
 common experimentwindow, set, experiment
 common default, defaultdir
 n = experiment->getnumberDatasets()
 d = fltarr(n)
 x = intarr(n)
 d[*] = !VALUES.F_NAN
+
 parname = experiment->getCellParName(selected)
 progressBar = Obj_New("SHOWPROGRESS", message='Calculating '+parname+', please wait...')
 progressBar->Start
@@ -79,9 +87,14 @@ for i=0,n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
+xlabel = 'Step number'
+if KEYWORD_SET(st) then begin
+  x = experiment->getStrains()
+  xlabel = 'Strain'
+endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, d, title = parname +' vs. step number', xlabel='Step number', ylabel= parname
+plotinteractive1D, base, x, d, title = parname +' vs. step number', xlabel=xlabel, ylabel= parname
 end
 
 
@@ -139,14 +152,22 @@ CASE ev.id OF
 		CASE uval OF
 		'REFINE': startRefineUnitCell, stash.log
 		'ASCII': exportRefineUnitCellCSV, stash.log
-		'PLOTD0': BEGIN
+		'PLOTD0-STEP': BEGIN
 			WIDGET_CONTROL, stash.plotwhatD0, GET_VALUE=selected
 			plotDSpacings, stash.log, stash.base, selected
 		END
-		'PLOTUC': BEGIN
+    'PLOTD0-STRAIN': BEGIN
+      WIDGET_CONTROL, stash.plotwhatD0, GET_VALUE=selected
+      plotDSpacings, stash.log, stash.base, selected, /STRAIN
+    END
+		'PLOTUC-STEP': BEGIN
 			WIDGET_CONTROL, stash.plotwhatUC, GET_VALUE=selected
 			plotUnitCell, stash.log, stash.base, selected
 		END
+    'PLOTUC-STRAIN': BEGIN
+      WIDGET_CONTROL, stash.plotwhatUC, GET_VALUE=selected
+      plotUnitCell, stash.log, stash.base, selected, /STRAIN
+    END
 		'DONE': WIDGET_CONTROL, stash.input, /DESTROY
 		else:
 		ENDCASE
@@ -178,11 +199,13 @@ export = WIDGET_BUTTON(buttons1, VALUE='Export to ASCII', UVALUE='ASCII')
 plotD = WIDGET_BASE(buttons1,/COLUMN, /ALIGN_CENTER, /FRAME, XSIZE = 100)
 values = experiment->getPeakList(/used)
 plotwhatD0 = CW_BGROUP(plotD, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='d0(hkl)', UVALUE='NOTHING')
-plotit = WIDGET_BUTTON(plotD, VALUE='Plot', UVALUE='PLOTD0')
+plotit = WIDGET_BUTTON(plotD, VALUE='Plot vs. step', UVALUE='PLOTD0-STEP')
+plotit = WIDGET_BUTTON(plotD, VALUE='Plot vs. strain', UVALUE='PLOTD0-STRAIN')
 plotUC = WIDGET_BASE(buttons1,/COLUMN, /ALIGN_CENTER, /FRAME, XSIZE = 100)
 values = experiment->getCellParList()
 plotwhatUC = CW_BGROUP(plotUC, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='Unit cell', UVALUE='NOTHING')
-plotit = WIDGET_BUTTON(plotUC, VALUE='Plot', UVALUE='PLOTUC')
+plotit = WIDGET_BUTTON(plotUC, VALUE='Plot vs. step', UVALUE='PLOTUC-STEP')
+plotit = WIDGET_BUTTON(plotUC, VALUE='Plot vs. strain', UVALUE='PLOTUC-STRAIN')
 ; log
 log = WIDGET_TEXT(fit, XSIZE=75, YSIZE=30, /ALIGN_CENTER, /EDITABLE, /WRAP, /SCROLL)
 ; buttons2

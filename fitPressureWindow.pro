@@ -30,9 +30,10 @@
 
 ; ***************************************************************************
 ; plot pressure function
+; Add the /STRAIN parameter to plot vs. strain, will plot vs. step otherwise
 ; **************************************************************************
 
-pro plotpressure, log, base
+pro plotpressure, log, base, STRAIN = st
 common experimentwindow, set, experiment
 common default, defaultdir
 n = experiment->getnumberDatasets()
@@ -51,16 +52,22 @@ for i=0,n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
+xlabel = 'Step number'
+if KEYWORD_SET(st) then begin
+  x = experiment->getStrains()
+  xlabel = 'Strain'
+endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, p, title = 'Pressure vs. step number', xlabel='Step number', ylabel='Pressure'
+plotinteractive1D, base, x, p, title = 'Pressure vs. step number', xlabel=xlabel, ylabel='Pressure'
 end
 
 ; ***************************************************************************
 ; plot volume function
+; Add the /STRAIN parameter to plot vs. strain, will plot vs. step otherwise
 ; **************************************************************************
 
-pro plotvolume, log, base
+pro plotvolume, log, base, STRAIN = st
 common experimentwindow, set, experiment
 common default, defaultdir
 n = experiment->getnumberDatasets()
@@ -78,9 +85,14 @@ for i=0,n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
+xlabel = 'Step number'
+if KEYWORD_SET(st) then begin
+  x = experiment->getStrains()
+  xlabel = 'Strain'
+endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, v, title = 'Volume vs. step number', xlabel='Step number', ylabel='Volume'
+plotinteractive1D, base, x, v, title = 'Volume vs. step number', xlabel=xlabel, ylabel='Volume'
 end
 
 
@@ -140,10 +152,14 @@ CASE ev.id OF
 		CASE uval OF
 		'REFINE': startRefinePressure, stash.log
 		'EXPORT': exportPressure, stash.log
-		'PLOT': BEGIN
+		'PLOT-STEP': BEGIN
 			WIDGET_CONTROL, stash.plotwhat, GET_VALUE=selected
 			if (selected eq 1) then  plotVolume, stash.log, stash.base else plotPressure, stash.log, stash.base
 		END
+    'PLOT-STRAIN': BEGIN
+      WIDGET_CONTROL, stash.plotwhat, GET_VALUE=selected
+      if (selected eq 1) then  plotVolume, stash.log, stash.base, /STRAIN else plotPressure, stash.log, stash.base, /STRAIN
+    END
 		'DONE': WIDGET_CONTROL, stash.input, /DESTROY
 		else:
 		ENDCASE
@@ -174,7 +190,8 @@ export = WIDGET_BUTTON(buttons1, VALUE='Export results', UVALUE='EXPORT')
 plotPV = WIDGET_BASE(buttons1,/COLUMN, /ALIGN_CENTER, /FRAME, XSIZE = 100)
 values = ['Pressure', 'Volume']
 plotwhat = CW_BGROUP(plotPV, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='Plots', UVALUE='NOTHING')
-plotit = WIDGET_BUTTON(plotPV, VALUE='Plot', UVALUE='PLOT')
+plotit = WIDGET_BUTTON(plotPV, VALUE='Plot vs. step', UVALUE='PLOT-STEP')
+plotit = WIDGET_BUTTON(plotPV, VALUE='Plot vs. strain', UVALUE='PLOT-STRAIN')
 ; log
 log = WIDGET_TEXT(fit, XSIZE=75, YSIZE=30, /ALIGN_CENTER, /EDITABLE, /WRAP, /SCROLL)
 ; buttons2
