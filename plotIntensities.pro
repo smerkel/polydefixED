@@ -191,15 +191,27 @@ ymax = max([(*pstate).ymin,(*pstate).ymax])
 if (postscript eq 0) then begin ; plotting to screen
 	; ensure that data are being plotted in the draw window
 	wset, (*pstate).w_id
-	for i=0, (*pstate).nSets-1 do begin
-		for j=0, (*pstate).nUsePeak-1 do begin
-			if (i eq 0) and (j eq 0) then $
-				plot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
-			else $
-				oplot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)), color=0, PSYM=2
-		endfor
-	endfor
-
+  ;print, "Here"
+  ;print, (*pstate).nUsePeak
+  ;print, (*pstate).nSets
+  ;print, (*(*pstate).xdata[0])
+	if ((*pstate).nUsePeak eq 1) then begin
+	 for i=0, (*pstate).nSets-1 do begin
+     if (i eq 0) then $
+       plot, (*(*pstate).xdata[i]), (*(*pstate).ydata[i]),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+       else $
+       oplot, (*(*pstate).xdata[i]), (*(*pstate).ydata[i]), color=0, PSYM=2
+    endfor
+	endif else begin
+    for i=0, (*pstate).nSets-1 do begin
+		  for j=0, (*pstate).nUsePeak-1 do begin
+			 if (i eq 0) and (j eq 0) then $
+				  plot, (*(*pstate).xdata[i,j]), (*(*pstate).ydata[i,j]),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+          else $
+          oplot, (*(*pstate).xdata[i,j]), (*(*pstate).ydata[i,j]), color=0, PSYM=2
+      endfor
+    endfor
+  endelse
 	; if we are scaling, plot a red rectangle
 	if ((*pstate).scaling eq 1) then begin
 		oplot, [(*pstate).sc_xmin,(*pstate).sc_xmax,(*pstate).sc_xmax,(*pstate).sc_xmin,(*pstate).sc_xmin], [(*pstate).sc_ymin,(*pstate).sc_ymin,(*pstate).sc_ymax,(*pstate).sc_ymax,(*pstate).sc_ymin], color=10
@@ -221,14 +233,23 @@ if (postscript eq 0) then begin ; plotting to screen
 ;		endif
 ;	endif
 endif else begin ; postscript, simply plot the data
-	for i=0, (*pstate).nSets-1 do begin
-		for j=0, (*pstate).nUsePeak-1 do begin
-			if (i eq 0) and (j eq 0) then $
-				plot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
-			else $
-				oplot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)), color=0, PSYM=2
-		endfor
-	endfor
+  if ((*pstate).nUsePeak eq 1) then begin
+    for i=0, (*pstate).nSets-1 do begin
+      if (i eq 0) then $
+        plot, (*(*pstate).xdata[i]), (*(*pstate).ydata[i]),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+      else $
+        oplot, (*(*pstate).xdata[i]), (*(*pstate).ydata[i]), color=0, PSYM=2
+    endfor
+  endif else begin  
+    for i=0, (*pstate).nSets-1 do begin
+		  for j=0, (*pstate).nUsePeak-1 do begin
+			 if (i eq 0) and (j eq 0) then $
+				  plot, (*(*pstate).xdata[i,j]), (*(*pstate).ydata[i,j]),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+          else $
+          oplot, (*(*pstate).xdata[i,j]), (*(*pstate).ydata[i,j]), color=0, PSYM=2
+      endfor
+    endfor
+  endelse
 endelse
 end
 
@@ -247,20 +268,32 @@ ymax = max([(*pstate).ymin,(*pstate).ymax])
 ; ensure that data are being plotted in the draw window
 wset, (*pstate).w_id
 ; plot!!
-for i=0, (*pstate).nSets-1 do begin
-	; plot
-	for j=0, (*pstate).nUsePeak-1 do begin
-		if (j eq 0) then $
-		plot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
-		else oplot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)), color=0, PSYM=2
-	endfor
-	; legend
-	x3 = xmax-0.3*(xmax-xmin)
-	y1 = ymax-0.07*(ymax-ymin)
-	xyouts, x3, y1, (*pstate).legend[i], color=0, charsize=1.8, charthick=2
-	if (savemovie) then MPEG_PUT, mpegID, window=(*pstate).w_id, FRAME=i*3, /ORDER
-	wait, 0.3
-endfor
+if  ((*pstate).nUsePeak eq 1) then begin
+  for i=0, (*pstate).nSets-1 do begin
+      plot, (*(*pstate).xdata[i]), (*(*pstate).ydata[i]),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 
+      ; legend
+      x3 = xmax-0.3*(xmax-xmin)
+      y1 = ymax-0.07*(ymax-ymin)
+      xyouts, x3, y1, (*pstate).legend[i], color=0, charsize=1.8, charthick=2
+      if (savemovie) then MPEG_PUT, mpegID, window=(*pstate).w_id, FRAME=i*3, /ORDER
+      wait, 0.3
+  endfor
+endif else begin
+  for i=0, (*pstate).nSets-1 do begin
+	 ; plot
+   for j=0, (*pstate).nUsePeak-1 do begin
+		  if (j eq 0) then $
+        plot, (*(*pstate).xdata[i,j]), (*(*pstate).ydata[i,j]),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+        else oplot, (*(*pstate).xdata[i,j]), (*(*pstate).ydata[i,j]), color=0, PSYM=2
+   endfor
+	 ; legend
+	 x3 = xmax-0.3*(xmax-xmin)
+	 y1 = ymax-0.07*(ymax-ymin)
+	 xyouts, x3, y1, (*pstate).legend[i], color=0, charsize=1.8, charthick=2
+	 if (savemovie) then MPEG_PUT, mpegID, window=(*pstate).w_id, FRAME=i*3, /ORDER
+	 wait, 0.3
+  endfor
+endelse
 if (savemovie) then begin
 	MPEG_SAVE, mpegID, FILENAME=filename
 	MPEG_CLOSE, mpegID
@@ -321,7 +354,7 @@ end
 ; setting up
 ; ***************************************************************************
 
-pro plotIntensities, base, sets, peaks, dynamic, savemovie, filename
+pro plotIntensities, base, sets, peaks, dynamic, savemovie, filename, correctintensity
 common experimentwindow, set, experiment
 title = "Diffraction intensities"
 xlabel = "Psi"
@@ -341,9 +374,12 @@ for i=0, nSets-1 do begin
 	for j=0, nPeaks-1 do begin
 		peak = usePeak[j]
 		xdata[i,j] = PTR_NEW(experiment->getPsiPeak(set,peak,/used))
-		ydata[i,j] = PTR_NEW(experiment->getIPeak(set,peak,/used))
+		ydata[i,j] = PTR_NEW(experiment->getIPeak(set,peak, correctintensity,/used))
 		ydatamin = min([ydatamin,min(*(ydata[i,j]))])
 		ydatamax = max([ydatamax,max(*(ydata[i,j]))])
+		;print, i, j
+    ;print, *(xdata[i,j])
+    ;print, *(ydata[i,j])
 	endfor
 endfor
 ; main window

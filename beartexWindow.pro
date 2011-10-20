@@ -245,10 +245,11 @@ return, intensitiesBeartex
 end
 
 ; ***************************************************************************
-; Plot Beartex event
+; Plot Beartex data
+; Changed 10/2011, option to normalize intensities
 ; ***************************************************************************
 
-pro plotTestBeartex, base, globalbase, sets, peaks, range, lisser
+pro plotTestBeartex, base, globalbase, sets, peaks, range, lisser, correctintensity
 common experimentwindow, set, experiment
 common default, defaultdir
 ; Making sure there is someting to plot
@@ -262,7 +263,7 @@ offset = experiment->latticeStrainOffset(set)
 for j=0, nUsePeak-1 do begin
 	peak = usePeak[j]
 	angles = experiment->getPsiPeak(sets,peak,/used)
-	intensities = experiment->getIPeak(sets,peak,/used)
+	intensities = experiment->getIPeak(sets,peak,correctintensity,/used)
 	peakname = experiment->getPeakName(peak,/used)
 	test = prepareBeartexIntensities(base, peakname, angles, intensities, offset, range, lisser, 1)
 endfor
@@ -270,9 +271,10 @@ end
 
 ; ***************************************************************************
 ; Save Beartex input file
+; ; Changed 10/2011, option to normalize intensities
 ; ***************************************************************************
 
-pro saveFileBeartex, base, globalbase, sets, peaks, range, lisser, symcode
+pro saveFileBeartex, base, globalbase, sets, peaks, range, lisser, symcode, correctintensity
 common experimentwindow, set, experiment
 common default, defaultdir
 ; Making sure there is someting to save
@@ -306,7 +308,7 @@ if (filename ne '') then begin
 		beartexTxt += header
 		beartexTxt += experiment->beartexPeakLine(peak, /used)
 		angles = experiment->getPsiPeak(sets,peak,/used)
-		intensities = experiment->getIPeak(sets,peak,/used)
+		intensities = experiment->getIPeak(sets,peak,correctintensity,/used)
 		; intensities
 		peakname = experiment->getPeakName(peak,/used)
 		beartexIntensities = prepareBeartexIntensities(base, peakname, angles, intensities, offset, range, lisser, 0)
@@ -332,6 +334,7 @@ end
 
 ; ***************************************************************************
 ; Main Beartex user interface
+; ; Changed 10/2011, option to normalize intensities
 ; ***************************************************************************
 
 pro beartexWindow_event, ev
@@ -347,9 +350,10 @@ range = float(rangeS[0])
 CASE ev.id OF
 	stash.input:
 	else: begin
+    WIDGET_CONTROL, stash.plotwhat, GET_VALUE=correctintensity ;Caro 07/01/11
 		CASE uval OF
-		'PLOT': plotTestBeartex, stash.input, stash.base, sets, peaks, range, lisser
-		'ASCII': saveFileBeartex, stash.input, stash.base, sets, peaks, range, lisser, symcode
+		'PLOT': plotTestBeartex, stash.input, stash.base, sets, peaks, range, lisser, correctintensity
+		'ASCII': saveFileBeartex, stash.input, stash.base, sets, peaks, range, lisser, symcode, correctintensity
 		'DONE': WIDGET_CONTROL, stash.input, /DESTROY
 		else:
 		ENDCASE
@@ -358,6 +362,7 @@ CASE ev.id OF
 endcase
 end
 
+; Changed 10/2011, option to normalize intensities
 pro beartexWindow, base
 common experimentwindow, set, experiment
 common fonts, titlefont, boldfont, mainfont
@@ -400,12 +405,16 @@ codelist = experiment->beartexCodeList()
 values = strarr(n_elements(codelist.pg1))
 for i=0, n_elements(codelist.pg1)-1 do values[i] = codelist.pg1[i] + " - " + strtrim(string(codelist.pg2[i]),2)
 symcodeButton = CW_BGROUP(symcode, values, /ROW, /EXCLUSIVE, SET_VALUE=0, UVALUE='SYM')
+; correctintensity = normalize intensities
+buttons2 = WIDGET_BASE(input,/ROW, /ALIGN_LEFT, /GRID_LAYOUT)
+values = ['Raw intensities', 'Corrected intensities']
+plotwhat = CW_BGROUP(buttons2, values, /COLUMN, /EXCLUSIVE, UVALUE='NOTHING', SET_VALUE=0)
 ; buttons2
 buttons2 = WIDGET_BASE(input,/ROW, /ALIGN_CENTER, /GRID_LAYOUT)
 plot1 = WIDGET_BUTTON(buttons2, VALUE='Plot', UVALUE='PLOT')
 close = WIDGET_BUTTON(buttons2, VALUE='Close window', UVALUE='DONE')
 export = WIDGET_BUTTON(buttons2, VALUE='Export to Beartex', UVALUE='ASCII')
-stash = {base: base, input: input, plotwhatPeak:plotwhatPeak, listSets:listSets, rangeInput: rangeInput,smoothButton:smoothButton, symcodeButton:symcodeButton}
+stash = {base: base, input: input, plotwhatPeak:plotwhatPeak, listSets:listSets, rangeInput: rangeInput,smoothButton:smoothButton, symcodeButton:symcodeButton, plotwhat:plotwhat}
 WIDGET_CONTROL, input, SET_UVALUE=stash
 WIDGET_CONTROL, input, /REALIZE
 XMANAGER, 'beartexWindow', input

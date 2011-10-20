@@ -37,7 +37,7 @@ la = WIDGET_LABEL(infobase, VALUE='PolydefixED v0.4', /ALIGN_LEFT, font=titlefon
 la = WIDGET_LABEL(infobase, VALUE='', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Polydefix, Polycrystal Deformation using X-rays', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Energy dispersive version', /ALIGN_LEFT)
-la = WIDGET_LABEL(infobase, VALUE='Build 8, 13 October 2011', /ALIGN_LEFT)
+la = WIDGET_LABEL(infobase, VALUE='Build 9, 20 October 2011', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Copyright S. Merkel, Universite Lille 1, France', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='http://merkel.ZoneO.net/Polydefix/', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='', /ALIGN_LEFT)
@@ -282,6 +282,7 @@ end
 
 ; ************************************************************ setDetectors ****************
 
+; Changed 10/2011 to allow for a change of reference intensity for each detector
 PRO doSetDetectors, input, table, log
 common experimentwindow, set, experiment
 WIDGET_CONTROL, table, GET_VALUE=value
@@ -295,11 +296,14 @@ endif
 ndetectors = experiment->getnumberDetectors();
 angles = fltarr(ndetectors);
 use = intarr(ndetectors);
+intensities = fltarr(ndetectors);
 for i=0, ndetectors-1 do begin
 	angles[i] = float(value[0,i])
 	use[i] = fix(value[1,i])
+  intensities[i] = float(value[2,i])
 endfor
 experiment->setDetectorAngles, angles
+experiment->setDetectorIntensities, intensities
 experiment->setDetectorUses, use
 WIDGET_CONTROL, input, /DESTROY
 logit, log, "Changed detectors arrangement.\n"
@@ -322,6 +326,7 @@ CASE ev.id OF
 endcase
 END
 
+; Changed 10/2011 to allow for a change of reference intensity for each detector
 PRO setDetectors, base, log
 common experimentwindow, set, experiment
 if (set eq 0) then begin
@@ -338,15 +343,17 @@ endif
 ndetectors = experiment->getnumberDetectors();
 angles = experiment->getDetectorAngles();
 use = experiment->getDetectorUses();
+intensities = experiment->getDetectorIntensities();
 ; Prepare a gui to edit peak information
 input = WIDGET_BASE(/COLUMN, Title='Detectors information', /MODAL, GROUP_LEADER=base)
-label = ['angle', 'use']   
+label = ['angle', 'use', 'intensity']   
 rows = ndetectors
 rowlabels = strarr(ndetectors)
-value = strarr(2,ndetectors)
+value = strarr(3,ndetectors)
 for i=0, ndetectors-1 do begin
 	value[0,i] = STRTRIM(STRING(angles[i],/PRINT),2)
 	value[1,i] = STRTRIM(STRING(use[i],/PRINT),2)
+  value[2,i] = STRTRIM(STRING(intensities[i],/PRINT),2)
 endfor
 for i=0, ndetectors-1 do rowlabels[i] = "Detector " + STRTRIM(STRING(i + 1,/PRINT),2)
 table = WIDGET_TABLE(input, VALUE=value, /EDITABLE, COLUMN_LABELS=label, ROW_LABELS=rowlabels, Y_SCROLL_SIZE = 20, COLUMN_WIDTHS=[150,150] )
@@ -454,6 +461,7 @@ CASE ev.id OF
 		'FITPRESSURE': fitPressureWindow, stash.base
 		'FITLATTICESTRAINS': fitLatticeStrainsWindow, stash.base
 		'FITSTRESS': fitStressWindow, stash.base
+    'DETCALIB': detCalibWindow, stash.base
 		'DIFFRINTENSITIES': diffIntensityWindow, stash.base
 		'INTVSIMAGE': diffIntensityWindow2, stash.base
 		'BEARTEX': beartexWindow, stash.base
@@ -496,6 +504,7 @@ fit_bttn3 = WIDGET_BUTTON(fit_menu, VALUE='Lattice strains', UVALUE='FITLATTICES
 fit_bttn4 = WIDGET_BUTTON(fit_menu, VALUE='Stresses', UVALUE='FITSTRESS')
 ; Texture menu
 texture_menu = WIDGET_BUTTON(bar, VALUE='Texture', /MENU)
+texture_bttn1 = WIDGET_BUTTON(texture_menu, VALUE='Calibration of Detectors', UVALUE='DETCALIB')
 texture_bttn1 = WIDGET_BUTTON(texture_menu, VALUE='Diffraction intensities', UVALUE='DIFFRINTENSITIES')
 texture_bttn2 = WIDGET_BUTTON(texture_menu, VALUE='Intensity vs image', UVALUE='INTVSIMAGE')
 texture_bttn2 = WIDGET_BUTTON(texture_menu, VALUE='Input file for Beartex', UVALUE='BEARTEX')

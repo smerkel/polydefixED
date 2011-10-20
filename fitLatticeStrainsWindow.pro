@@ -55,14 +55,17 @@ for i=0,n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
+ylabel = 'Q(hkl)'
 xlabel = 'Step number'
+title = 'Q(hkl) vs. step number'
 if KEYWORD_SET(st) then begin
   x = experiment->getStrains()
   xlabel = 'Strain'
+  title = 'Q(hkl) vs. strain'
 endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, Q, title = 'Q(hkl) vs. step number', xlabel=xlabel, ylabel='Q(hkl)', legend=legend
+plotinteractive1D, base, x, Q, title=title, xlabel=xlabel, ylabel=ylabel, legend=legend
 end
 
 ; ***************************************************************************

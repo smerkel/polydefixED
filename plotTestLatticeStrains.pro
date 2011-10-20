@@ -310,21 +310,34 @@ ymax = max([(*pstate).ymin,(*pstate).ymax])
 ; ensure that data are being plotted in the draw window
 wset, (*pstate).w_id
 ; plot!!
-for i=0, (*pstate).nSets-1 do begin
-	; plot
-	for j=0, (*pstate).nUsePeak-1 do begin
-		if (j eq 0) then $
-		plot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
-		else oplot, (*(*pstate).xdata(i,j)), (*(*pstate).ydata(i,j)), color=0, PSYM=2
-		oplot, (*pstate).xdatafit, (*(*pstate).ydatafit(i,j)), color=10
-	endfor
-	; legend
-	x3 = xmax-0.3*(xmax-xmin)
-	y1 = ymax-0.07*(ymax-ymin)
-	xyouts, x3, y1, (*pstate).legend[i], color=0, charsize=1.8, charthick=2
-	if (savemovie) then MPEG_PUT, mpegID, window=(*pstate).w_id, FRAME=i*3, /ORDER
-	wait, 0.3
-endfor
+if ((*pstate).nUsePeak eq 1) then begin
+  for i=0, (*pstate).nSets-1 do begin
+    plot, (*(*pstate).xdata[i]), (*(*pstate).ydata[i]),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 
+    oplot, (*pstate).xdatafit, (*(*pstate).ydatafit[i]), color=10
+    ; legend
+    x3 = xmax-0.3*(xmax-xmin)
+    y1 = ymax-0.07*(ymax-ymin)
+    xyouts, x3, y1, (*pstate).legend[i], color=0, charsize=1.8, charthick=2
+    if (savemovie) then MPEG_PUT, mpegID, window=(*pstate).w_id, FRAME=i*3, /ORDER
+    wait, 0.3
+  endfor
+endif else begin
+  for i=0, (*pstate).nSets-1 do begin
+  	; plot
+  	for j=0, (*pstate).nUsePeak-1 do begin
+  		if (j eq 0) then $
+  		plot, (*(*pstate).xdata[i,j]), (*(*pstate).ydata[i,j]),  xrange = [xmin,xmax], yrange=[ymin,ymax], background=255, color=0, xtitle=(*pstate).xlabel, ytitle=(*pstate).ylabel, title=(*pstate).title, ystyle = 1, xstyle=1, PSYM=2 $
+  		else oplot, (*(*pstate).xdata[i,j]), (*(*pstate).ydata[i,j]), color=0, PSYM=2
+  		oplot, (*pstate).xdatafit, (*(*pstate).ydatafit[i,j]), color=10
+  	endfor
+  	; legend
+  	x3 = xmax-0.3*(xmax-xmin)
+  	y1 = ymax-0.07*(ymax-ymin)
+  	xyouts, x3, y1, (*pstate).legend[i], color=0, charsize=1.8, charthick=2
+  	if (savemovie) then MPEG_PUT, mpegID, window=(*pstate).w_id, FRAME=i*3, /ORDER
+  	wait, 0.3
+  endfor
+endelse
 if (savemovie) then begin
 	MPEG_SAVE, mpegID, FILENAME=filename
 	MPEG_CLOSE, mpegID

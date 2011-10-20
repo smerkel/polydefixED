@@ -33,16 +33,17 @@
 ;   - nsteps: number of steps
 ;   - stepnames: array of string with names of each step
 ;   - steptimes: array of floats with times for each step
-;	- stepstrains: array of floats with strains for each step
+;	  - stepstrains: array of floats with strains for each step
 ;   - steptemperatures: array of floats with temperature for each step
 ;   - materialSet: 1 of material properties have been set, 0 otherwise
 ;   - material: object with material properties
-;	- fitoffset: fit direction with maximum stress, if 1, do it, if 0 do not do it
-;	- offset: direction with maximum stress (starting value if adjusted), in degrees
-;	- fitcenter: fit position of beam center, if 1, do it, if 0 do not do it
+;	  - fitoffset: fit direction with maximum stress, if 1, do it, if 0 do not do it
+;	  - offset: direction with maximum stress (starting value if adjusted), in degrees
+;	  - fitcenter: fit position of beam center, if 1, do it, if 0 do not do it
 ;   - usepeak: array of integer, usepeak[i]=1 if peak n. i should be used in analysis
-;	- detangles: array of floats (angles for detector positoons)
-;	- usedet: array of integer, 1 to use this detector, 0 for not
+;	  - detangles: array of floats (angles for detector positions)
+;   - detintensity: array of floats (angles for detector intensities)
+;	  - usedet: array of integer, 1 to use this detector, 0 for not
 ;   - hkl: array of integer, h, k, and l Miller indices
 ;   - dm: array of floats, measured d-spacings
 ;   - Im: array of floats, measured intensities
@@ -55,7 +56,7 @@
 
 
 PRO experimentObject__DEFINE 
-	struct = { experimentObject, set: 0, tmp: 0, filename:'', nhkl:0, ndetector:0, ttheta:0.0, nsteps:0, materialSet:0, material: PTR_NEW(), fitoffset:0, offset: 0., usepeak: PTR_NEW(), usedet:PTR_NEW(), detangles:PTR_NEW(), hkl:PTR_NEW(), dm:PTR_NEW(), Im: PTR_NEW(), stepnames: PTR_NEW(), steptimes: PTR_NEW(), stepstrains: PTR_NEW(), steptemperatures: PTR_NEW(), fitstrainsset: PTR_NEW(), fitstrains: PTR_NEW()}
+	struct = { experimentObject, set: 0, tmp: 0, filename:'', nhkl:0, ndetector:0, ttheta:0.0, nsteps:0, materialSet:0, material: PTR_NEW(), fitoffset:0, offset: 0., usepeak: PTR_NEW(), usedet:PTR_NEW(), detangles:PTR_NEW(), detintensity:PTR_NEW(), hkl:PTR_NEW(), dm:PTR_NEW(), Im: PTR_NEW(), stepnames: PTR_NEW(), steptimes: PTR_NEW(), stepstrains: PTR_NEW(), steptemperatures: PTR_NEW(), fitstrainsset: PTR_NEW(), fitstrains: PTR_NEW()}
 END
 
 ; ************************************************************** Init ************************
@@ -145,9 +146,30 @@ function experimentObject::getnumberDetectors
 return, self.ndetector
 end
 
+; returns all detector names in an array
+; Included 10/2011
+function experimentObject::getDetectorsNames
+detectorNames = strarr(self.ndetector)
+for i=0, self.ndetector-1 do detectorNames[i] = "Det. " + strtrim(string(i+1,/print),2)
+return, detectorNames
+end
+
+;returns detector name for detector i 
+; Included 10/2011
+function experimentObject::getDetectorsName, i
+return, "Det. " + strtrim(string(i+1,/print),2)
+end
+
+
 ; returns angle of detectors
 function experimentObject::getDetectorAngles
 return, (*self.detangles)
+end
+
+; New 10/2011
+; returns intensity of detectors
+function experimentObject::getDetectorIntensities
+return, (*self.detintensity)
 end
 
 ; returns use of detectors
@@ -160,6 +182,12 @@ end
 pro experimentObject::setDetectorAngles, angles
 (*self.detangles) = angles
 self->resetFit
+end
+
+; New 10/2011
+; to change intensity of detectors
+pro experimentObject::setDetectorIntensities, intensities
+(*self.detintensity) = intensities
 end
 
 ; to change use of detectors
@@ -198,6 +226,13 @@ end
 function experimentObject::getStrains
 ; if it is set, we return it
 return, (*self.stepstrains)
+end
+
+; Returns strain at step i
+; Include 10/2011
+function experimentObject::getStepStrain, i
+; if it is set, we return it
+return, (*self.stepstrains)[i]
 end
 
 ; Sets a new list of temperatures
@@ -327,6 +362,14 @@ endfor
 return, i
 end
 
+; usedpeaklist
+; return the list of used peaks, just indexed by numbers
+; Included 10/2011
+function experimentObject::usedpeaklist
+test = where((*self.usepeak) eq 1)
+return, test
+end
+
 ; Get peak name for peak i;
 ; returns a string with 'hkl'
 function experimentObject::getPeakName, i, used = used
@@ -422,21 +465,123 @@ end
 ; returns experimental intensity for dataset number set and peak number peak
 ; if used is set as key word, we count peaks removing those that should not be used
 ; return array data(npsi)
-function experimentObject::getIPeak, set, peak, used = used
+function experimentObject::getIPeak, set, peak, correctintensity, used = used
 if KEYWORD_SET(used) then usei=self->usedpeakindex(peak) else usei=peak
 data = fltarr(self.ndetector)
 data = (*self.Im)[set,usei,*]
+if (correctintensity eq 1) then begin    ;Caro 10/01/11
+  for i=0, self.ndetector-1 do data[i] = data[i] / (*self.detintensity)[i]
+endif
 return, data
 end
+
+; returns experimental the sum of experimental intensities
+;    for dataset number set
+;    for detector number det
+; removes peaks that are not used
+; returns raw intensities (not corrected)
+; Included 10/2011
+function experimentObject::getSumIDet, set, det
+data = 0.0
+peaks = self->usedpeaklist()
+for peak=0, n_elements(peaks)-1 do data += (*self.Im)[set,peaks[peak],det]
+return, data
+end
+
+; returns experimental the sum of experimental intensities
+;    for dataset number set
+;    for detector number det
+; removes peaks that are not used
+; returns raw intensities (not corrected)
+; Included 10/2011
+function experimentObject::getSumIDetref, set, referenceDet
+data = 0.0
+peaks = self->usedpeaklist()
+for peak=0, n_elements(peaks)-1 do data += (*self.Im)[set,peaks[peak],referenceDet]
+return, data
+end
+
+; returns the sum of experimental intensities for one detector
+;   divided by the sum of experimental intensities for the reference detector
+;    for dataset number set
+;    for detector number det
+;    for reference detector number referenceDet
+; Included 10/2011
+function experimentObject::getFcIDet, set, det, referenceDet
+;print, "Je calcule l'intensite pour le point", set, " et le detecteur ", det
+int = self->getSumIDet(set,det)
+;print, "Je calcule l'intensite pour le point", set, " et le detecteur ", referenceDet
+int2 = self->getSumIDetref(set,referenceDet)
+return, int/int2
+end
+
+; returns a summary of experimental intensities for all detectors at one step
+; Parameters
+;   - set: step number
+;   - referenceDet: reference detector (used to normalize intensities)
+; Included 10/2011
+function experimentObject::summaryDetectorIntensity, set, referenceDet      ;12/01/11
+if (self.materialSet eq 0) then return, "Not set\n"
+txt = ""
+for det=0, self.ndetector-1 do begin
+  int=self->getSumIdet(set,det)
+  int2=self->getFcIDet(set,det,referenceDet)
+  txt +=  strtrim(string(det+1,/print)) + '  ' +  fltformatC(int) +  '    ' + fltformatA(int2) + '\n'
+endfor
+return, txt
+end
+
+
+; returns a summary of experimental intensities for all detectors at all steps (steps are summed)
+; Parameters
+;   - referenceDet: reference detector (used to normalize intensities)    19/01/11
+; Included 10/2011
+function experimentObject::summaryDetectorIntensityAllSteps, referenceDet
+if (self.materialSet eq 0) then return, "Not set\n"
+intensities = fltarr(self.ndetector)
+for step = 0, self.nsteps-1 do begin
+  for det=0, self.ndetector-1 do begin
+    intensities(det) += self->getSumIdet(step,det)
+  endfor
+endfor
+txt = ""
+for det=0, self.ndetector-1 do txt +=  strtrim(string(det+1,/print)) + '  ' +  fltformatC(intensities(det)) +  '    ' + fltformatA(intensities(det)/intensities(referenceDet)) + '\n'
+return, txt
+end
+
+; Included 10/2011
+function experimentObject::summaryDetectorIntensityAll,referenceDet
+if (self.materialSet eq 0) then return, "Not set\n"
+detlist = self->getDetectorsNames()
+txt = "# For each detector and each step, sum of experimental intensities, normalized to reference detector\n"
+txt += "# step " + STRING(9B) + "strain"
+for i=0, self.ndetector-1 do txt += STRING(9B) + "FcI(" + detlist[i] + ")"
+txt += "\n"
+n = self.nsteps
+for step=0,n-1 do begin
+  txt += strtrim(string(step+1,/print),2) + STRING(9B)
+  txt += fltformatA((*self.stepstrains)[step]) + STRING(9B)
+  for det=0, self.ndetector-1 do begin
+    int2=self->getFcIDet(step,det,referenceDet)
+    txt += fltformatA(int2) + STRING(9B)
+  endfor
+  txt += "\n"
+endfor
+return, txt
+end
+
 
 
 ; returns experimental intensity for  peak number peak at angle number nangle
 ; if used is set as key word, we count peaks removing those that should not be used
 ; return array data(npsi)
-function experimentObject::getIPeakVsSet, peak, nangle, used = used
+function experimentObject::getIPeakVsSet, peak, nangle, correctintensity, used = used
 if KEYWORD_SET(used) then usei=self->usedpeakindex(peak) else usei=peak
 data = fltarr(self.ndetector)
 data = (*self.Im)[*,usei,nangle]
+if (correctintensity eq 1) then begin
+  for i = 0, self.nsteps-1 do data[i] = data[i] / (*self.detintensity)[nangle] ;Caro 20/01/11
+endif
 return, data
 end
 
@@ -1007,8 +1152,8 @@ printf, lun, '# 2 theta angle (in degrees)'
 printf, lun, STRING(self.ttheta, /PRINT)
 printf, lun, '# Number of detector positions'
 printf, lun, STRING(self.ndetector, /PRINT)
-printf, lun, '# Angles for detector positions, number, use (1/0), angle'
-for i=0, self.ndetector-1 do printf, lun, STRING(i+1, /PRINT, STRING((*self.usedet)[i])), STRING((*self.detangles)[i])
+printf, lun, '# Angles and intensities for detector positions, number, use (1/0), angle, reference intensity'
+for i=0, self.ndetector-1 do printf, lun, STRING(i+1, /PRINT, STRING((*self.usedet)[i])), STRING((*self.detangles)[i]), STRING((*self.detintensity)[i])
 printf, lun, '# Number of peaks'
 printf, lun, STRING(self.nhkl, /PRINT)
 printf, lun, '# Peak information'
@@ -1057,11 +1202,13 @@ self.ndetector = fix(readascii(lun,  com="#"))
 if (self.ndetector lt 1) then return, "Number of detector positions can not be lower than one!"
 self.detangles = PTR_NEW(fltarr(self.ndetector))
 self.usedet = PTR_NEW(intarr(self.ndetector))
+self.detintensity = PTR_NEW(fltarr(self.ndetector))
 logit, log, "\tDetectors positions"
 for i=0, self.ndetector-1 do begin
 	row = strsplit(readascii(lun,  com='#'), /extract)
-	(*self.detangles)(fix(row[0])-1) = float(row[2])
 	(*self.usedet)(fix(row[0])-1) = fix(row[1])
+  (*self.detangles)(fix(row[0])-1) = float(row[2])
+  (*self.detintensity)(fix(row[0])-1) = float(row[3])
 end
 ; Number of diffraction lines and peak information
 logit, log, "\tNumber of diffraction lines"

@@ -53,13 +53,16 @@ for i=0,n-1 do begin
 	progressBar->Update, percent
 endfor
 xlabel = 'Step number'
+ylabel = 'Pressure'
+title = 'Pressure vs. step number'
 if KEYWORD_SET(st) then begin
   x = experiment->getStrains()
   xlabel = 'Strain'
+  title = 'Pressure vs. strain'
 endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, p, title = 'Pressure vs. step number', xlabel=xlabel, ylabel='Pressure'
+plotinteractive1D, base, x, p, title=title, xlabel=xlabel, ylabel=ylabel
 end
 
 ; ***************************************************************************
@@ -189,7 +192,7 @@ refine = WIDGET_BUTTON(buttons1, VALUE='Refine pressures', UVALUE='REFINE')
 export = WIDGET_BUTTON(buttons1, VALUE='Export results', UVALUE='EXPORT')
 plotPV = WIDGET_BASE(buttons1,/COLUMN, /ALIGN_CENTER, /FRAME, XSIZE = 100)
 values = ['Pressure', 'Volume']
-plotwhat = CW_BGROUP(plotPV, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='Plots', UVALUE='NOTHING')
+plotwhat = CW_BGROUP(plotPV, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='Plots', UVALUE='NOTHING', SET_VALUE=0)
 plotit = WIDGET_BUTTON(plotPV, VALUE='Plot vs. step', UVALUE='PLOT-STEP')
 plotit = WIDGET_BUTTON(plotPV, VALUE='Plot vs. strain', UVALUE='PLOT-STRAIN')
 ; log

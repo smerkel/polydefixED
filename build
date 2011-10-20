@@ -53,6 +53,7 @@
 .COMPILE 'testLatticeStrainsWindow.pro'
 .COMPILE 'unitCellObject.pro'
 .COMPILE 'diffIntensityWindow2.pro'
+.COMPILE 'detCalibWindow.pro'
 .COMPILE 'polydefixED.pro'
 
 ; Resolve all routines

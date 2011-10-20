@@ -53,13 +53,16 @@ for i=0,n-1 do begin
 	progressBar->Update, percent
 endfor
 xlabel = 'Step number'
+ylabel = 'd0('+peakname+')'
+title = 'd0('+peakname+') vs. step number'
 if KEYWORD_SET(st) then begin
   x = experiment->getStrains()
   xlabel = 'Strain'
+  title = 'd0('+peakname+') vs. strain'
 endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, d, title = 'd0('+peakname+') vs. step number', xlabel=xlabel, ylabel='d0('+peakname+')', legend=['Exp.', 'Recalc.']
+plotinteractive1D, base, x, d, title=title, xlabel=xlabel, ylabel=ylabel, legend=['Exp.', 'Recalc.']
 end
 
 
@@ -88,13 +91,16 @@ for i=0,n-1 do begin
 	progressBar->Update, percent
 endfor
 xlabel = 'Step number'
+ylabel = parname
+title = parname +' vs. step number'
 if KEYWORD_SET(st) then begin
   x = experiment->getStrains()
   xlabel = 'Strain'
+  title = parname +' vs. strain'
 endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, d, title = parname +' vs. step number', xlabel=xlabel, ylabel= parname
+plotinteractive1D, base, x, d, title=title, xlabel=xlabel, ylabel=ylabel
 end
 
 
@@ -198,12 +204,12 @@ refine = WIDGET_BUTTON(buttons1, VALUE='Show details', UVALUE='REFINE')
 export = WIDGET_BUTTON(buttons1, VALUE='Export to ASCII', UVALUE='ASCII')
 plotD = WIDGET_BASE(buttons1,/COLUMN, /ALIGN_CENTER, /FRAME, XSIZE = 100)
 values = experiment->getPeakList(/used)
-plotwhatD0 = CW_BGROUP(plotD, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='d0(hkl)', UVALUE='NOTHING')
+plotwhatD0 = CW_BGROUP(plotD, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='d0(hkl)', UVALUE='NOTHING', SET_VALUE=0)
 plotit = WIDGET_BUTTON(plotD, VALUE='Plot vs. step', UVALUE='PLOTD0-STEP')
 plotit = WIDGET_BUTTON(plotD, VALUE='Plot vs. strain', UVALUE='PLOTD0-STRAIN')
 plotUC = WIDGET_BASE(buttons1,/COLUMN, /ALIGN_CENTER, /FRAME, XSIZE = 100)
 values = experiment->getCellParList()
-plotwhatUC = CW_BGROUP(plotUC, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='Unit cell', UVALUE='NOTHING')
+plotwhatUC = CW_BGROUP(plotUC, values, /COLUMN, /EXCLUSIVE, LABEL_TOP='Unit cell', UVALUE='NOTHING', SET_VALUE=0)
 plotit = WIDGET_BUTTON(plotUC, VALUE='Plot vs. step', UVALUE='PLOTUC-STEP')
 plotit = WIDGET_BUTTON(plotUC, VALUE='Plot vs. strain', UVALUE='PLOTUC-STRAIN')
 ; log

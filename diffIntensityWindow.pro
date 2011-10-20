@@ -25,7 +25,7 @@
 ; prepares a plot with a test of lattice strains fits
 ; **************************************************************************
 
-pro plotIntVsPsi, base, globalbase, sets, peaks, dynamic, savemovie
+pro plotIntVsPsi, base, globalbase, sets, peaks, dynamic, savemovie, correctintensity
 common experimentwindow, set, experiment
 common default, defaultdir
 ; Making sure there is someting to plot
@@ -44,7 +44,7 @@ if (dynamic and savemovie) then begin
 endif
 ; calling the plot window
 ; data will be pulled out of the experiment object in there
-plotIntensities, base, sets, peaks, dynamic, savemovie, filename
+plotIntensities, base, sets, peaks, dynamic, savemovie, filename, correctintensity
 end
 
 ; *********************************************************************** Interface ****************
@@ -59,9 +59,10 @@ if (WIDGET_INFO(stash.savemovie, /BUTTON_SET) eq 1) then savemovie = 1 else save
 CASE ev.id OF
 	stash.input:
 	else: begin
+    WIDGET_CONTROL, stash.plotwhat, GET_VALUE=correctintensity
 		CASE uval OF
-		'PLOT': plotIntVsPsi, stash.input, stash.base, sets, peaks, 0, savemovie
-		'DYNAMICPLOT': plotIntVsPsi, stash.input, stash.base, sets, peaks, 1, savemovie
+		'PLOT': plotIntVsPsi, stash.input, stash.base, sets, peaks, 0, savemovie, correctintensity
+		'DYNAMICPLOT': plotIntVsPsi, stash.input, stash.base, sets, peaks, 1, savemovie, correctintensity
 		'DONE': WIDGET_CONTROL, stash.input, /DESTROY
 		else:
 		ENDCASE
@@ -97,13 +98,17 @@ buttons = WIDGET_BASE(right,/COLUMN, /ALIGN_LEFT, /NonExclusive)
 savemovie = WIDGET_BUTTON(buttons, VALUE='Save dynamic plot in mpeg', UVALUE='NOTHING')
 ; peak list
 values = experiment->getPeakList(/used)
-plotwhatPeak = CW_BGROUP(right, values, /COLUMN, /NONEXCLUSIVE, LABEL_TOP='hkl', UVALUE='NOTHING', /SCROLL, Y_SCROLL_SIZE=270)
+plotwhatPeak = CW_BGROUP(right, values, /COLUMN, /NONEXCLUSIVE, LABEL_TOP='hkl', UVALUE='NOTHING', /SCROLL, Y_SCROLL_SIZE=270, SET_VALUE=0)
+; normalize intensities
+buttons2 = WIDGET_BASE(input,/ROW, /ALIGN_LEFT, /GRID_LAYOUT)
+values = ['Plot raw intensity', 'Plot corrected intensity']
+plotwhat = CW_BGROUP(buttons2, values, /COLUMN, /EXCLUSIVE, UVALUE='NOTHING', SET_VALUE=0)
 ; buttons2
 buttons2 = WIDGET_BASE(input,/ROW, /ALIGN_CENTER, /GRID_LAYOUT)
 plot1 = WIDGET_BUTTON(buttons2, VALUE='Plot', UVALUE='PLOT')
 plot2 = WIDGET_BUTTON(buttons2, VALUE='Dynamic Plot', UVALUE='DYNAMICPLOT')
 close = WIDGET_BUTTON(buttons2, VALUE='Close window', UVALUE='DONE')
-stash = {base: base, input: input, plotwhatPeak:plotwhatPeak, listSets:listSets, savemovie: savemovie}
+stash = {base: base, input: input, plotwhatPeak:plotwhatPeak, listSets:listSets, savemovie: savemovie, plotwhat:plotwhat}
 WIDGET_CONTROL, input, SET_UVALUE=stash
 WIDGET_CONTROL, input, /REALIZE
 XMANAGER, 'diffIntensityWindow', input

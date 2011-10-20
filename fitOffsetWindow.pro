@@ -46,14 +46,17 @@ for i=0, n-1 do begin
 	percent = 100.*i/n
 	progressBar->Update, percent
 endfor
+ylabel = 'Maximum stress direction'
 xlabel = 'Step number'
+title = 'Maximum stress direction vs. step number'
 if KEYWORD_SET(st) then begin
   x = experiment->getStrains()
   xlabel = 'Strain'
+  title = 'Maximum stress direction vs. strain'
 endif
 progressBar->Destroy
 Obj_Destroy, progressBar
-plotinteractive1D, base, x, BC, title = 'Maximum stress direction vs. image number', xlabel=xlabel, ylabel='Maximum stress direction', legend=legend
+plotinteractive1D, base, x, BC, title=title, xlabel=xlabel, ylabel=ylabel, legend=legend
 end
 
 ; ***************************************************************************
