@@ -450,7 +450,8 @@ file_bttn3 = WIDGET_BUTTON(file_menu, VALUE='Export plot to PS', event_pro = 'pl
 file_bttn4 = WIDGET_BUTTON(file_menu, VALUE='Close window', event_pro ='plotTestLatticeStrains_cleanupmenu', /SEPARATOR)
 ; other
 status = widget_label(tlb, value=' ', /dynamic_resize)
-draw = widget_draw(tlb, xsize=500, ysize=300, /motion_events, /button_events, event_pro='plotTestLatticeStrains_draw')
+; 10/2011, added RETAIN=2 so the plot does not get cleared by other windows.
+draw = widget_draw(tlb, xsize=500, ysize=300, /motion_events, /button_events, event_pro='plotTestLatticeStrains_draw', RETAIN=2)
 ; build the UI
 Widget_Control, tlb, /Realize
 ; get important information to communicate in the application

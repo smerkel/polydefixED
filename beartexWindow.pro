@@ -164,7 +164,8 @@ file_bttn2 = WIDGET_BUTTON(file_menu, VALUE='Export plot to JPEG', event_pro ='d
 file_bttn3 = WIDGET_BUTTON(file_menu, VALUE='Export plot to PS', event_pro = 'doPlotBeartex_exportps' )
 file_bttn4 = WIDGET_BUTTON(file_menu, VALUE='Close window', event_pro = 'doPlotBeartex_cleanupmenu', /SEPARATOR)
 ; other
-draw = widget_draw(tlb, xsize=500, ysize=300)
+; 10/2011, added RETAIN=2 so the plot does not get cleared by other windows.
+draw = widget_draw(tlb, xsize=500, ysize=300, RETAIN=2)
 ; build the UI
 Widget_Control, tlb, /Realize
 ; get important information to communicate in the application
