@@ -883,6 +883,36 @@ for peakindex=0, n_elements(peaks)-1 do begin
 	;print, "hkl Q, dQ, g, dG, t, dt", hh, kk, ll, Q, dQ, g, dg, t[peakindex], dt[peakindex]
 	txt += '   t(' + peaks[peakindex] + ') = ' + fltformatA(stress[peakindex]) + ' (+/-) ' +  fltformatA(dstress[peakindex]) + '\n'
 endfor
+; Calculation of average stress, using a weighted mean with weighted estimator of variance
+; according to http://en.wikipedia.org/wiki/Mean_square_weighted_deviation
+meanWT = 0.;
+totWt = 0.;
+stdWT = 0.;
+meanT = 0.;
+wgT = 0.;
+stdT = 0.;
+for peakindex=0, n_elements(peaks)-1 do begin 
+  if (dstress[peakindex] gt 0.0001) then begin
+    meanWT += stress[peakindex]/dstress[peakindex]
+    totWt += 1./dstress[peakindex]
+    meanT += stress[peakindex]
+    wgT += 1.
+  endif
+endfor
+meanWT = meanWT/totWt
+meanT = meanT/wgT
+for peakindex=0, n_elements(peaks)-1 do begin
+  if (dstress[peakindex] gt 0.0001) then begin
+    stdWT += (stress[peakindex]-meanWT)^2/dstress[peakindex]
+    stdT += (stress[peakindex]-meanT)^2
+  endif
+endfor
+stdWT = stdWT/totWt
+stdT = stdT/wgT
+txt += '   <t> (not weighted) = '+ fltformatA(meanT)+ '\n'
+txt += '   sigma <t> (not weighted) = '+ fltformatA(stdT)+ '\n'
+txt += '   <t> (weighted) = '+ fltformatA(meanWT)+ '\n'
+txt += '   sigma <t> (weighted) = '+ fltformatA(stdWT)+ '\n'
 OBJ_DESTROY, cell
 return, txt + '\n'
 end
