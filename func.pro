@@ -42,7 +42,8 @@ end
 ; ****************************************** fltformat *********************************
 
 function fltformatA, f
-s = string(f,format='(F8.5)')
+if (abs(f) lt 10.) then s = string(f,format='(F8.5)') else s = string(f,format='(e9.2)')
+; print, f, s
 return, s
 end
 

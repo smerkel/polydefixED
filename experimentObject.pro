@@ -862,6 +862,7 @@ fit = self->latticeStrain(index)
 T = (*self.steptemperatures)[index]
 cell = (*self.material)->refinePressure(fit, T)
 txt = cell->getName()
+txt += "Step " + string(index) + "\n"
 txt += (*self.stepnames)[index]
 p = cell->getPressure()
 dp = cell->getErrPressure()
