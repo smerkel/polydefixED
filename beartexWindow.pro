@@ -314,7 +314,7 @@ if (filename ne '') then begin
 		peakname = experiment->getPeakName(peak,/used)
 		beartexIntensities = prepareBeartexIntensities(base, peakname, angles, intensities, offset, range, lisser, 0)
 		maxi = max(beartexIntensities)
-		beartexIntensities *= 500./maxi; rescaling intensities, max at 500
+		beartexIntensities *= 5000./maxi; rescaling intensities, max at 5000
 		for i=0, 18 do begin
 			line = " "
 			item = string(fix(beartexIntensities[i]),format='(I4)')
@@ -324,7 +324,7 @@ if (filename ne '') then begin
 			beartexTxt += line + STRING(13B) +  STRING(10B)
 			beartexTxt += line + STRING(13B) +  STRING(10B)
 		endfor
-		beartexTxt += STRING(13B) +  STRING(10B)
+		if (j lt nUsePeak-1) then beartexTxt += STRING(13B)  + STRING(10B)
 		openw, lun, filename, /get_lun
 		printf, lun, beartexTxt, format='(A)'
 		free_lun, lun

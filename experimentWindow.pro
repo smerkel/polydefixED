@@ -37,7 +37,7 @@ la = WIDGET_LABEL(infobase, VALUE='PolydefixED v0.4', /ALIGN_LEFT, font=titlefon
 la = WIDGET_LABEL(infobase, VALUE='', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Polydefix, Polycrystal Deformation using X-rays', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Energy dispersive version', /ALIGN_LEFT)
-la = WIDGET_LABEL(infobase, VALUE='Build 12, 24 January 2012', /ALIGN_LEFT)
+la = WIDGET_LABEL(infobase, VALUE='Build 13, 1 February 2012', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='Copyright S. Merkel, Universite Lille 1, France', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='http://merkel.ZoneO.net/Polydefix/', /ALIGN_LEFT)
 la = WIDGET_LABEL(infobase, VALUE='', /ALIGN_LEFT)
