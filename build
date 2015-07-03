@@ -23,7 +23,8 @@
 ; RESET IDL Session
 .RESET_SESSION
 
-; Compile project files
+; Compile project files  
+.COMPILE 'changesWindow.pro'        
 .COMPILE 'sym.pro'
 .COMPILE 'mpfit.pro'
 .COMPILE 'mpfitfun.pro'

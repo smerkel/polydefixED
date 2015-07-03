@@ -37,7 +37,6 @@ la = WIDGET_TEXT(infobase, XSIZE=80, YSIZE=25, /ALIGN_LEFT, /EDITABLE, /WRAP)
 ccr = STRING(13B) ; Carriage Return
 clf = STRING([10B]) ; line feed
 text = "PolydefixED" + clf
-text += "Compiled July 3nd 2015" + clf
 text += "Homepage: http://merkel.zoneo.net/Multifit-Polydefix" + clf + clf
 text += "Multifit/Polydefix is an open-source IDL software package for an efficient processing of diffraction data obtained in deformation apparatuses at synchrotron beamlines. It is a compound of three different packages that can be run independently. Polydefix is for lattice strains, pressure, stress, and texture analysis. It will start from the output files created in Multifit and extract the information required for establishing the rheological behavior of the sample. PolydefixED is an adaptation of Polydefix for the specific needs of data collected using the array of energy dispersive detectors that was installed on the the X17B2 beamline of the National Synchrotron Light Source, USA." + clf + clf
 text += "Copyright S. Merkel, N. Hilairet Universite Lille 1, France" + clf
@@ -472,6 +471,7 @@ CASE ev.id OF
 		'INTVSIMAGE': diffIntensityWindow2, stash.base
 		'BEARTEX': beartexWindow, stash.base
 		'ABOUT': aboutWindow, stash.base
+		'CHANGES': changesWindow, stash.base
 		'NOTAVAILABLE': tmp = DIALOG_MESSAGE("This function is not implemented yet!", /ERROR)
 		'FORBIDDEN': tmp = DIALOG_MESSAGE("You need to registered", /ERROR)
 		else:
@@ -517,6 +517,7 @@ texture_bttn2 = WIDGET_BUTTON(texture_menu, VALUE='Input file for Beartex', UVAL
 ; About menu 
 about_menu = WIDGET_BUTTON(bar, VALUE='About...', /MENU, /ALIGN_RIGHT) 
 about_bttn1 = WIDGET_BUTTON(about_menu, VALUE='About this program', UVALUE='ABOUT')
+about_bttn1 = WIDGET_BUTTON(about_menu, VALUE='Recent changes', UVALUE='CHANGES')
 ; top container
 top = WIDGET_BASE(base,/ROW)
 summary =  WIDGET_BASE(top,/COLUMN, FRAME=1)
